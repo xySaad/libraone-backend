@@ -11,6 +11,7 @@ import (
 	config "libraone/config/generated"
 	db "libraone/db/generated"
 	"libraone/internal/middlewares"
+	"libraone/internal/services/profile"
 	"libraone/routes"
 	"net/http"
 
@@ -21,22 +22,22 @@ import (
 
 func main() {
 	config := config.GetConfig()
-	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GRAPHQL_TOKEN)
+	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, config.GRAPHQL_TOKEN)
 	sqlDB, err := sql.Open("sqlite3", "db/database.db")
 	if err != nil {
 		panic(err)
 	}
-
 	queries := db.New(sqlDB)
 
 	routes := routes.Routes{}
 	router := gin.Default()
 	router.GET("/oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
-	//TODO: change /api/auth to /oauth/gitea/callback
-	router.GET("/api/auth/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
+	router.GET("/oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
-	authenticated := middlewares.Group(router.RouterGroup, "", middlewares.EnsureAuthenticated(queries))
-	authenticated.GET("/campus/online", routes.Campus.Online)
+	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries))
+	tokenSupplier := &profile.TokenSupplier{Login: config.PROFILE_LOGIN, Password: config.PROFILE_PASSWORD}
+	profileService := &profile.ProfileService{Token: tokenSupplier}
+	talentOnly.Any("/campus/*path", routes.Campus(profileService).ProxyHandler)
 
 	err = http.ListenAndServe(":5051", router)
 	if err != nil {

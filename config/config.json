@@ -2,7 +2,9 @@
   "@ENV": ".env",
   "GRAPHQL_TOKEN": "@ENV.GRAPHQL_TOKEN",
   "giteaClientSecret": "@ENV.GITEA_CLIENT_SECRET",
-  "giteaClientID": "0deb28b4-d8bc-45a0-a6dc-564de08325ae",
-  "callbackRedirectURL": "http://localhost:5173/login/gitea?close=true",
-  "PROFILE_TOKEN": "@ENV.PROFILE_TOKEN"
+  "giteaClientID": "e5f4ddaa-2369-4ae3-b51a-bfac995b3626",
+  "giteaRedirectURL": "https://libraone.undo.it/api/oauth/gitea/callback",
+  "callbackRedirectURL": "https://libraone.undo.it/login/gitea?close=true",
+  "PROFILE_LOGIN": "@ENV.PROFILE_LOGIN",
+  "PROFILE_PASSWORD": "@ENV.PROFILE_PASSWORD"
 }
