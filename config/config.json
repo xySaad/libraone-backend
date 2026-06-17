@@ -3,5 +3,6 @@
   "GRAPHQL_TOKEN": "@ENV.GRAPHQL_TOKEN",
   "giteaClientSecret": "@ENV.GITEA_CLIENT_SECRET",
   "giteaClientID": "0deb28b4-d8bc-45a0-a6dc-564de08325ae",
-  "callbackRedirectURL": "http://localhost:5173/login/gitea?close=true "
+  "callbackRedirectURL": "http://localhost:5173/login/gitea?close=true",
+  "PROFILE_TOKEN": "@ENV.PROFILE_TOKEN"
 }

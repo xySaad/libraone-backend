@@ -1,39 +1,46 @@
 package main
 
-//go:generate go run github.com/xySaad/cfgo@v0.0.5
+//go:generate go run github.com/xySaad/cfgo
+//go:generate rm -r db/generated
+//go:generate go run github.com/sqlc-dev/sqlc/cmd/sqlc generate -f db/sqlc.json
+//go:generate go run -tags sqlite3 github.com/golang-migrate/migrate/v4/cmd/migrate -source file://db/migrations -database sqlite3://db/database.db up
+
 import (
-	"encoding/json"
+	"database/sql"
 	"fmt"
 	config "libraone/config/generated"
+	db "libraone/db/generated"
+	"libraone/internal/middlewares"
+	"libraone/routes"
 	"net/http"
-	"os"
 
 	"github.com/gin-gonic/gin"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/xySaad/z01auth"
 )
 
 func main() {
-	router := gin.Default()
 	config := config.GetConfig()
 	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GRAPHQL_TOKEN)
-	router.GET("/oauth/gitea", func(c *gin.Context) {
-		//TOOD: add state
-		c.Redirect(http.StatusMovedPermanently, z01authConfig.AuthCodeURL(""))
-	})
+	sqlDB, err := sql.Open("sqlite3", "db/database.db")
+	if err != nil {
+		panic(err)
+	}
 
+	queries := db.New(sqlDB)
+
+	routes := routes.Routes{}
+	router := gin.Default()
+	router.GET("/oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
 	//TODO: change /api/auth to /oauth/gitea/callback
-	router.GET("/api/auth/callback", func(c *gin.Context) {
-		z01User, err := z01authConfig.Callback(c.Query("code"))
-		if err != nil {
-			fmt.Println("error:", err)
-			return
-		}
-		//TODO: save basic information in DB
-		//TODO: generate JWT cookie, save it in DB, and set it in the response headers
-		json.NewEncoder(os.Stdout).Encode(z01User)
-		c.Redirect(http.StatusSeeOther, config.CallbackRedirectURL)
-	})
+	router.GET("/api/auth/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
-	s := &http.Server{Addr: ":5051", Handler: router}
-	s.ListenAndServe()
+	authenticated := middlewares.Group(router.RouterGroup, "", middlewares.EnsureAuthenticated(queries))
+	authenticated.GET("/campus/online", routes.Campus.Online)
+
+	err = http.ListenAndServe(":5051", router)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }

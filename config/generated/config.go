@@ -14,17 +14,19 @@ func mustLoadEnv(path string) map[string]string {
 }
 var env_ENV = mustLoadEnv(".env")
 type Config struct {
-	GRAPHQL_TOKEN string
-	GiteaClientSecret string
 	GiteaClientID string
 	CallbackRedirectURL string
+	PROFILE_TOKEN string
+	GRAPHQL_TOKEN string
+	GiteaClientSecret string
 }
 
 var config = Config{
+	GiteaClientID: "0deb28b4-d8bc-45a0-a6dc-564de08325ae",
+	CallbackRedirectURL: "http://localhost:5173/login/gitea?close=true",
+	PROFILE_TOKEN: env_ENV["PROFILE_TOKEN"],
 	GRAPHQL_TOKEN: env_ENV["GRAPHQL_TOKEN"],
 	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
-	GiteaClientID: "0deb28b4-d8bc-45a0-a6dc-564de08325ae",
-	CallbackRedirectURL: "http://localhost:5173/login/gitea?close=true ",
 }
 
 func GetConfig() Config { return config }
