@@ -23,3 +23,11 @@ func (m *Middleware[D]) GET(relativePath string, handler HandlerFunc[D]) gin.IRo
 		}
 	})
 }
+func (m *Middleware[D]) Any(relativePath string, handler HandlerFunc[D]) gin.IRoutes {
+	return m.RouterGroup.Any(relativePath, func(ctx *gin.Context) {
+		result := m.middleware(ctx)
+		if result != nil {
+			handler(ctx, result)
+		}
+	})
+}

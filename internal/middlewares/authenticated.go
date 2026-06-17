@@ -17,7 +17,7 @@ func EnsureAuthenticated(queries *db.Queries) MiddlewareFunc[db.Candidate] {
 	return func(c *gin.Context) *db.Candidate {
 		token, err := c.Cookie(session.CookieName)
 		if err != nil || token == "" {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return nil
 		}
 
@@ -26,12 +26,12 @@ func EnsureAuthenticated(queries *db.Queries) MiddlewareFunc[db.Candidate] {
 			ExpiresAt: time.Now(),
 		})
 		if err != nil {
-			c.AbortWithStatus(http.StatusUnauthorized)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			return nil
 		}
 
 		if !candidate.PlatformAccess {
-			c.AbortWithStatus(http.StatusForbidden)
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 			return nil
 		}
 		return &candidate

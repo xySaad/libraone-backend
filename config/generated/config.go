@@ -14,23 +14,23 @@ func mustLoadEnv(path string) map[string]string {
 }
 var env_ENV = mustLoadEnv(".env")
 type Config struct {
+	GRAPHQL_TOKEN string
+	GiteaClientSecret string
 	GiteaClientID string
 	GiteaRedirectURL string
 	CallbackRedirectURL string
 	PROFILE_LOGIN string
 	PROFILE_PASSWORD string
-	GRAPHQL_TOKEN string
-	GiteaClientSecret string
 }
 
 var config = Config{
+	GRAPHQL_TOKEN: env_ENV["GRAPHQL_TOKEN"],
+	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
 	GiteaClientID: "e5f4ddaa-2369-4ae3-b51a-bfac995b3626",
 	GiteaRedirectURL: "https://libraone.undo.it/api/oauth/gitea/callback",
 	CallbackRedirectURL: "https://libraone.undo.it/login/gitea?close=true",
 	PROFILE_LOGIN: env_ENV["PROFILE_LOGIN"],
 	PROFILE_PASSWORD: env_ENV["PROFILE_PASSWORD"],
-	GRAPHQL_TOKEN: env_ENV["GRAPHQL_TOKEN"],
-	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
 }
 
 func GetConfig() Config { return config }

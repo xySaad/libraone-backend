@@ -11,6 +11,7 @@ import (
 type Querier interface {
 	CreateOrUpdateCandidate(ctx context.Context, arg CreateOrUpdateCandidateParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
+	GetCandidateByGraphqlLogin(ctx context.Context, graphqlLogin string) (Candidate, error)
 	GetCandidateBySessionToken(ctx context.Context, arg GetCandidateBySessionTokenParams) (Candidate, error)
 }
 

@@ -16,7 +16,7 @@ func EnsureTalentRole(queries *db.Queries) MiddlewareFunc[db.Candidate] {
 		}
 
 		if candidate.Role != string(z01auth.CandidateRole_TALENT) {
-			c.AbortWithStatus(http.StatusForbidden)
+			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 			return nil
 		}
 

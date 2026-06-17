@@ -37,7 +37,10 @@ func main() {
 	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries))
 	tokenSupplier := &profile.TokenSupplier{Login: config.PROFILE_LOGIN, Password: config.PROFILE_PASSWORD}
 	profileService := &profile.ProfileService{Token: tokenSupplier}
-	talentOnly.Any("/campus/*path", routes.Campus(profileService).ProxyHandler)
+	campusRoutes := routes.Campus(profileService)
+	talentOnly.Any("/campus/*path", campusRoutes.ProxyHandler)
+	talentOnly.GET("/candidate/", campusRoutes.Candidate(queries))
+	talentOnly.GET("/candidate/:login", campusRoutes.Candidate(queries))
 
 	err = http.ListenAndServe(":5051", router)
 	if err != nil {
