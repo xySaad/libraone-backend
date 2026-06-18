@@ -42,6 +42,7 @@ func main() {
 	talentOnly.Any("/campus/*path", campusRoutes.ProxyHandler)
 	talentOnly.GET("/candidate/", campusRoutes.Candidate(queries))
 	talentOnly.GET("/candidate/:login", campusRoutes.Candidate(queries))
+	talentOnly.Any("/graphql", routes.GraphQL(graphqlToken).ProxyHandler)
 
 	err = http.ListenAndServe(":5051", router)
 	if err != nil {
