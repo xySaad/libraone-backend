@@ -11,6 +11,7 @@ import (
 	config "libraone/config/generated"
 	db "libraone/db/generated"
 	"libraone/internal/middlewares"
+	"libraone/internal/services/graphql"
 	"libraone/internal/services/profile"
 	"libraone/routes"
 	"net/http"
@@ -22,7 +23,8 @@ import (
 
 func main() {
 	config := config.GetConfig()
-	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, config.GRAPHQL_TOKEN)
+	graphqlToken := graphql.MustNewTokenSupplier(config.GRAPHQL_LOGIN, config.GRAPHQL_PASSWORD)
+	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, graphqlToken)
 	sqlDB, err := sql.Open("sqlite3", "db/database.db")
 	if err != nil {
 		panic(err)
@@ -35,9 +37,8 @@ func main() {
 	router.GET("/oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
 	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries))
-	tokenSupplier := &profile.TokenSupplier{Login: config.PROFILE_LOGIN, Password: config.PROFILE_PASSWORD}
-	profileService := &profile.ProfileService{Token: tokenSupplier}
-	campusRoutes := routes.Campus(profileService)
+	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
+	campusRoutes := routes.Campus(&profileTokenSupplier)
 	talentOnly.Any("/campus/*path", campusRoutes.ProxyHandler)
 	talentOnly.GET("/candidate/", campusRoutes.Candidate(queries))
 	talentOnly.GET("/candidate/:login", campusRoutes.Candidate(queries))

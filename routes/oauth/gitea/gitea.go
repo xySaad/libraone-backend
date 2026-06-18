@@ -1,7 +1,6 @@
 package gitea
 
 import (
-	"fmt"
 	config "libraone/config/generated"
 	db "libraone/db/generated"
 	"libraone/internal/session"
@@ -24,8 +23,12 @@ func (Gitea) Entry(z01authConfig z01auth.Config) gin.HandlerFunc {
 func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, queries *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		candidate, err := z01authConfig.Callback(c.Query("code"))
+		if err == z01auth.ErrMultipleUsers {
+			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
+			return
+		}
 		if err != nil {
-			fmt.Println("error:", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "OAuth failure"})
 			return
 		}
 
@@ -39,15 +42,14 @@ func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, querie
 			Campus:         candidate.Campus,
 			PlatformAccess: candidate.PlatformAccess,
 		})
-
 		if err != nil {
-			fmt.Println("db error:", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			return
 		}
 
 		token, expiresAt, err := session.New(c, queries, int64(candidate.GiteaID))
 		if err != nil {
-			fmt.Println("session error:", err)
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Session error"})
 			return
 		}
 

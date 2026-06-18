@@ -5,17 +5,30 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	tokensupplier "libraone/internal/token_supplier"
 	"net/http"
 )
 
+const (
+	API_BASE       = "https://mapl.zone01oujda.ma"
+	LOGIN_ENDPOINT = API_BASE + "/login"
+)
+
 type ProfileService struct {
-	Token *TokenSupplier
+	token *tokensupplier.Supplier
 }
 
-const PROFILE_API_BASE = "https://mapl.zone01oujda.ma"
+func MustNewService(login, password string) ProfileService {
+	return ProfileService{token: tokensupplier.MustNewSupplier(newTokenFetcher(login, password))}
+}
+
+func NewService(login, password string) (ProfileService, error) {
+	token, err := tokensupplier.NewSupplier(newTokenFetcher(login, password))
+	return ProfileService{token: token}, err
+}
 
 func (ps *ProfileService) request(originalReq *http.Request, targetPath string) (*http.Response, error) {
-	endpoint := PROFILE_API_BASE + targetPath + "?" + originalReq.URL.RawQuery
+	endpoint := API_BASE + targetPath + "?" + originalReq.URL.RawQuery
 	req, err := http.NewRequest(originalReq.Method, endpoint, originalReq.Body)
 	if err != nil {
 		return nil, fmt.Errorf("creating request: %w", err)
@@ -25,7 +38,7 @@ func (ps *ProfileService) request(originalReq *http.Request, targetPath string) 
 			req.Header.Add(k, v)
 		}
 	}
-	req.Header.Set("X-TOKEN", ps.Token.Get())
+	req.Header.Set("X-TOKEN", ps.token.Get())
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("executing request: %w", err)
@@ -58,7 +71,7 @@ func (ps *ProfileService) ForwardRequest(originalReq *http.Request, targetPath s
 		return resp, nil
 	}
 
-	if err := ps.Token.refreshToken(); err != nil {
+	if err := ps.token.RefreshToken(); err != nil {
 		return nil, fmt.Errorf("refreshing token: %w", err)
 	}
 	return ps.request(originalReq, targetPath)
