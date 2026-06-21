@@ -30,4 +30,4 @@ VOLUME ["/app/db"]
 
 EXPOSE 5051
 
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entrypoint.sh"]
