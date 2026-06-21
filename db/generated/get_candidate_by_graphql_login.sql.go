@@ -11,7 +11,7 @@ import (
 
 const getCandidateByGraphqlLogin = `-- name: GetCandidateByGraphqlLogin :one
 SELECT
-    candidates.id, candidates.role, candidates.avatar_url, candidates.description, candidates.gitea_login, candidates.graphql_login, candidates.campus, candidates.platform_access, candidates.created_at
+    candidates.id, candidates.role, candidates.avatar_url, candidates.description, candidates.gitea_login, candidates.graphql_login, candidates.graphql_id, candidates.campus, candidates.platform_access, candidates.created_at
 FROM
     candidates
 WHERE
@@ -28,6 +28,7 @@ func (q *Queries) GetCandidateByGraphqlLogin(ctx context.Context, graphqlLogin s
 		&i.Description,
 		&i.GiteaLogin,
 		&i.GraphqlLogin,
+		&i.GraphqlID,
 		&i.Campus,
 		&i.PlatformAccess,
 		&i.CreatedAt,

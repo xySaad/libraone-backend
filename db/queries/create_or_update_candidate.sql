@@ -7,11 +7,12 @@ INSERT INTO
         description,
         gitea_login,
         graphql_login,
+        graphql_id,
         campus,
         platform_access
     )
 VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+    (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
     role = excluded.role,
@@ -19,5 +20,6 @@ SET
     description = excluded.description,
     gitea_login = excluded.gitea_login,
     graphql_login = excluded.graphql_login,
+    graphql_id = excluded.graphql_id,
     campus = excluded.campus,
     platform_access = excluded.platform_access;

@@ -41,6 +41,7 @@ func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, querie
 			GraphqlLogin:   candidate.GraphqlLogin,
 			Campus:         candidate.Campus,
 			PlatformAccess: candidate.PlatformAccess,
+			GraphqlID:      int64(candidate.GraphqlId),
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Database error"})

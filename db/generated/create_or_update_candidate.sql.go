@@ -18,11 +18,12 @@ INSERT INTO
         description,
         gitea_login,
         graphql_login,
+        graphql_id,
         campus,
         platform_access
     )
 VALUES
-    (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
+    (?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (id) DO
 UPDATE
 SET
     role = excluded.role,
@@ -30,6 +31,7 @@ SET
     description = excluded.description,
     gitea_login = excluded.gitea_login,
     graphql_login = excluded.graphql_login,
+    graphql_id = excluded.graphql_id,
     campus = excluded.campus,
     platform_access = excluded.platform_access
 `
@@ -41,6 +43,7 @@ type CreateOrUpdateCandidateParams struct {
 	Description    string `json:"description"`
 	GiteaLogin     string `json:"gitea_login"`
 	GraphqlLogin   string `json:"graphql_login"`
+	GraphqlID      int64  `json:"graphql_id"`
 	Campus         string `json:"campus"`
 	PlatformAccess bool   `json:"platform_access"`
 }
@@ -53,6 +56,7 @@ func (q *Queries) CreateOrUpdateCandidate(ctx context.Context, arg CreateOrUpdat
 		arg.Description,
 		arg.GiteaLogin,
 		arg.GraphqlLogin,
+		arg.GraphqlID,
 		arg.Campus,
 		arg.PlatformAccess,
 	)

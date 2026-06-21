@@ -12,7 +12,7 @@ import (
 
 const getCandidateBySessionToken = `-- name: GetCandidateBySessionToken :one
 SELECT
-    candidates.id, candidates.role, candidates.avatar_url, candidates.description, candidates.gitea_login, candidates.graphql_login, candidates.campus, candidates.platform_access, candidates.created_at
+    candidates.id, candidates.role, candidates.avatar_url, candidates.description, candidates.gitea_login, candidates.graphql_login, candidates.graphql_id, candidates.campus, candidates.platform_access, candidates.created_at
 FROM
     sessions
     JOIN candidates ON candidates.id = sessions.candidate_id
@@ -36,6 +36,7 @@ func (q *Queries) GetCandidateBySessionToken(ctx context.Context, arg GetCandida
 		&i.Description,
 		&i.GiteaLogin,
 		&i.GraphqlLogin,
+		&i.GraphqlID,
 		&i.Campus,
 		&i.PlatformAccess,
 		&i.CreatedAt,

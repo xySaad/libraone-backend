@@ -15,6 +15,7 @@ type Candidate struct {
 	Description    string    `json:"description"`
 	GiteaLogin     string    `json:"gitea_login"`
 	GraphqlLogin   string    `json:"graphql_login"`
+	GraphqlID      int64     `json:"graphql_id"`
 	Campus         string    `json:"campus"`
 	PlatformAccess bool      `json:"platform_access"`
 	CreatedAt      time.Time `json:"created_at"`
