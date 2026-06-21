@@ -9,3 +9,5 @@ $ go run -tags sqlite3 github.com/golang-migrate/migrate/v4/cmd/migrate create -
 ```bash
 go generate && go run .
 ```
+
+An example using this API can be found at https://github.com/xySaad/libraone-frontend
