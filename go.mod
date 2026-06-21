@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/xySaad/z01auth v0.0.1
+	github.com/xySaad/z01auth v0.0.0-20260621094652-6795ec339792
 )
 
 require (
@@ -245,8 +245,6 @@ require (
 	modernc.org/token v1.0.0 // indirect
 	modernc.org/zappy v1.0.0 // indirect
 )
-
-replace github.com/xySaad/z01auth => ../z01auth
 
 tool (
 	github.com/golang-migrate/migrate/v4/cmd/migrate
