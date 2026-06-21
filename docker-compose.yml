@@ -1,0 +1,16 @@
+name: libraone
+
+services:
+  libraone:
+    build: .
+    image: libraone:latest
+    container_name: libraone
+    restart: unless-stopped
+    ports:
+      - "5051:5051"
+    volumes:
+      - ./.env:/app/.env:ro
+      - libraone_db:/app/db
+
+volumes:
+  libraone_db:
