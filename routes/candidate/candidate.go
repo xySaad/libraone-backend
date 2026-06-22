@@ -2,6 +2,7 @@ package candidate
 
 import (
 	db "libraone/db/generated"
+	"libraone/internal/dto"
 	"libraone/internal/middlewares"
 	"libraone/internal/services/profile"
 	"net/http"
@@ -13,8 +14,8 @@ type Candidate struct {
 	ProfileService profile.ProfileService
 }
 
-func (cmp *Candidate) Candidate(queries *db.Queries) middlewares.HandlerFunc[db.Candidate] {
-	return func(c *gin.Context, selfCandidate *db.Candidate) {
+func (cmp *Candidate) Candidate(queries *db.Queries) middlewares.HandlerFunc[dto.Candidate] {
+	return func(c *gin.Context, selfCandidate *dto.Candidate) {
 		login := c.Param("login")
 		if login == "" {
 			c.JSON(http.StatusOK, selfCandidate)
@@ -26,6 +27,7 @@ func (cmp *Candidate) Candidate(queries *db.Queries) middlewares.HandlerFunc[db.
 			c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"error": "Not Found"})
 			return
 		}
-		c.JSON(http.StatusOK, candidate)
+
+		c.JSON(http.StatusOK, dto.CandidateFromDB(candidate))
 	}
 }

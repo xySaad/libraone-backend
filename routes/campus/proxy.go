@@ -2,7 +2,7 @@ package campus
 
 import (
 	"io"
-	db "libraone/db/generated"
+	"libraone/internal/dto"
 	"libraone/internal/services/profile"
 	"net/http"
 
@@ -13,7 +13,7 @@ type Campus struct {
 	ProfileService profile.ProfileService
 }
 
-func (cmp *Campus) ProxyHandler(c *gin.Context, candidate *db.Candidate) {
+func (cmp *Campus) ProxyHandler(c *gin.Context, candidate *dto.Candidate) {
 	path := c.Param("path")
 	resp, err := cmp.ProfileService.ForwardRequest(c.Request, path)
 	if err != nil {

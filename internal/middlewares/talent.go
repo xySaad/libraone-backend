@@ -2,14 +2,15 @@ package middlewares
 
 import (
 	db "libraone/db/generated"
+	"libraone/internal/dto"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/xySaad/z01auth"
 )
 
-func EnsureTalentRole(queries *db.Queries) MiddlewareFunc[db.Candidate] {
-	return func(c *gin.Context) *db.Candidate {
+func EnsureTalentRole(queries *db.Queries) MiddlewareFunc[dto.Candidate] {
+	return func(c *gin.Context) *dto.Candidate {
 		candidate := EnsureAuthenticated(queries)(c)
 		if c.IsAborted() {
 			return nil

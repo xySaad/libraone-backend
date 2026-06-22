@@ -3,7 +3,7 @@ package graphql
 import (
 	"fmt"
 	"io"
-	db "libraone/db/generated"
+	"libraone/internal/dto"
 	"libraone/internal/services/graphql"
 	"net/http"
 
@@ -20,7 +20,7 @@ func New(token *graphql.TokenSupplier) *GraphQL {
 	return &GraphQL{token: token}
 }
 
-func (gql *GraphQL) ProxyHandler(c *gin.Context, candidate *db.Candidate) {
+func (gql *GraphQL) ProxyHandler(c *gin.Context, candidate *dto.Candidate) {
 	path := c.Param("path")
 	resp, err := gql.request(c.Request, path)
 	if err != nil {

@@ -5,6 +5,7 @@ import (
 	"time"
 
 	db "libraone/db/generated"
+	"libraone/internal/dto"
 	"libraone/internal/session"
 
 	"github.com/gin-gonic/gin"
@@ -13,8 +14,8 @@ import (
 // EnsureAuthenticated reads the session cookie, loads the candidate
 // it belongs to, and only lets the request through if the session is
 // valid (not expired) and the candidate has platform_access = true.
-func EnsureAuthenticated(queries *db.Queries) MiddlewareFunc[db.Candidate] {
-	return func(c *gin.Context) *db.Candidate {
+func EnsureAuthenticated(queries *db.Queries) MiddlewareFunc[dto.Candidate] {
+	return func(c *gin.Context) *dto.Candidate {
 		token, err := c.Cookie(session.CookieName)
 		if err != nil || token == "" {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -34,6 +35,6 @@ func EnsureAuthenticated(queries *db.Queries) MiddlewareFunc[db.Candidate] {
 			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
 			return nil
 		}
-		return &candidate
+		return dto.CandidateFromDB(candidate)
 	}
 }
