@@ -37,12 +37,14 @@ func main() {
 	router.GET("/oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
 	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries))
-	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
-	campusRoutes := routes.Campus(&profileTokenSupplier)
-	talentOnly.Any("/campus/*path", campusRoutes.ProxyHandler)
-	talentOnly.GET("/candidate/", campusRoutes.Candidate(queries))
-	talentOnly.GET("/candidate/:login", campusRoutes.Candidate(queries))
 	talentOnly.Any("/graphql", routes.GraphQL(graphqlToken).ProxyHandler)
+
+	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
+	talentOnly.Any("/campus/*path", routes.Campus(&profileTokenSupplier).ProxyHandler)
+
+	candidateRoutes := routes.Candidate(&profileTokenSupplier)
+	talentOnly.GET("/candidate/", candidateRoutes.Candidate(queries))
+	talentOnly.GET("/candidate/:login", candidateRoutes.Candidate(queries))
 
 	err = http.ListenAndServe(":5051", router)
 	if err != nil {

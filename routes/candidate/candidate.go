@@ -1,14 +1,19 @@
-package campus
+package candidate
 
 import (
 	db "libraone/db/generated"
 	"libraone/internal/middlewares"
+	"libraone/internal/services/profile"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func (cmp *Campus) Candidate(queries *db.Queries) middlewares.HandlerFunc[db.Candidate] {
+type Candidate struct {
+	ProfileService profile.ProfileService
+}
+
+func (cmp *Candidate) Candidate(queries *db.Queries) middlewares.HandlerFunc[db.Candidate] {
 	return func(c *gin.Context, selfCandidate *db.Candidate) {
 		login := c.Param("login")
 		if login == "" {
