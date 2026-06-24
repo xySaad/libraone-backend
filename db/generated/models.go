@@ -21,6 +21,15 @@ type Candidate struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
+type GiteaToken struct {
+	CandidateID  int64     `json:"candidate_id"`
+	AccessToken  string    `json:"access_token"`
+	TokenType    string    `json:"token_type"`
+	RefreshToken string    `json:"refresh_token"`
+	Expiry       time.Time `json:"expiry"`
+	ExpiresIn    int64     `json:"expires_in"`
+}
+
 type Session struct {
 	TokenHash   string    `json:"token_hash"`
 	CandidateID int64     `json:"candidate_id"`

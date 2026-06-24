@@ -6,7 +6,8 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/joho/godotenv v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/xySaad/z01auth v0.0.0-20260621094652-6795ec339792
+	github.com/xySaad/z01auth v0.0.0-20260624000819-b868f27a8edc
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
@@ -208,7 +209,6 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20250620022241-b7579e27df2b // indirect
 	golang.org/x/mod v0.37.0 // indirect
-	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260610154732-fb80ec83bdd9 // indirect
 	golang.org/x/term v0.44.0 // indirect

@@ -9,9 +9,9 @@ import (
 	"github.com/xySaad/z01auth"
 )
 
-func EnsureTalentRole(queries *db.Queries) MiddlewareFunc[dto.Candidate] {
+func EnsureTalentRole(queries *db.Queries, z01authConfig z01auth.Config) MiddlewareFunc[dto.Candidate] {
 	return func(c *gin.Context) *dto.Candidate {
-		candidate := EnsureAuthenticated(queries)(c)
+		candidate := EnsureAuthenticated(queries, z01authConfig)(c)
 		if c.IsAborted() {
 			return nil
 		}

@@ -1,6 +1,7 @@
 package gitea
 
 import (
+	"context"
 	config "libraone/config/generated"
 	db "libraone/db/generated"
 	"libraone/internal/session"
@@ -22,42 +23,39 @@ func (Gitea) Entry(z01authConfig z01auth.Config) gin.HandlerFunc {
 
 func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, queries *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		candidate, err := z01authConfig.Callback(c.Query("code"))
-		if err == z01auth.ErrMultipleUsers {
-			c.AbortWithStatusJSON(http.StatusConflict, gin.H{"error": err.Error()})
-			return
-		}
+		bgCtx := context.Background()
+		giteaToken, err := z01authConfig.Exchange(bgCtx, c.Query("code"))
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "OAuth failure"})
 			return
 		}
-
-		err = queries.CreateOrUpdateCandidate(c, db.CreateOrUpdateCandidateParams{
-			ID:             int64(candidate.GiteaID),
-			GiteaLogin:     candidate.GiteaLogin,
-			AvatarUrl:      candidate.AvatarURL,
-			Description:    candidate.Description,
-			Role:           string(candidate.Role),
-			GraphqlLogin:   candidate.GraphqlLogin,
-			Campus:         candidate.Campus,
-			PlatformAccess: candidate.PlatformAccess,
-			GraphqlID:      int64(candidate.GraphqlId),
+		candidateId, err := z01authConfig.FetchCandidateId(giteaToken)
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "UserInfo failure"})
+			return
+		}
+		cookieToken, expiresAt, err := session.New(c, queries, int64(candidateId))
+		if err != nil {
+			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Session error"})
+			return
+		}
+		err = queries.InsertGiteaToken(bgCtx, db.InsertGiteaTokenParams{
+			CandidateID:  int64(candidateId),
+			AccessToken:  giteaToken.AccessToken,
+			TokenType:    giteaToken.TokenType,
+			RefreshToken: giteaToken.RefreshToken,
+			Expiry:       giteaToken.Expiry,
+			ExpiresIn:    giteaToken.ExpiresIn,
 		})
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
 			return
 		}
 
-		token, expiresAt, err := session.New(c, queries, int64(candidate.GiteaID))
-		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Session error"})
-			return
-		}
-
 		c.SetSameSite(http.SameSiteLaxMode)
 		c.SetCookie(
 			session.CookieName,
-			token,
+			cookieToken,
 			int(time.Until(expiresAt).Seconds()),
 			"/",
 			"",

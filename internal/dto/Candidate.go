@@ -1,7 +1,7 @@
 package dto
 
 import (
-	db "libraone/db/generated"
+	"github.com/xySaad/z01auth"
 )
 
 type Candidate struct {
@@ -15,15 +15,15 @@ type Candidate struct {
 	Campus       string `json:"campus"`
 }
 
-func CandidateFromDB(candidate db.Candidate) *Candidate {
+func CandidateFromZ01auth(candidate *z01auth.Candidate) *Candidate {
 	return &Candidate{
-		ID:           candidate.ID,
-		Role:         candidate.Role,
-		AvatarUrl:    candidate.AvatarUrl,
+		ID:           int64(candidate.GiteaID),
+		Role:         string(candidate.Role),
+		AvatarUrl:    candidate.AvatarURL,
 		Description:  candidate.Description,
 		GiteaLogin:   candidate.GiteaLogin,
 		GraphqlLogin: candidate.GraphqlLogin,
-		GraphqlID:    candidate.GraphqlID,
+		GraphqlID:    int64(candidate.GraphqlId),
 		Campus:       candidate.Campus,
 	}
 }

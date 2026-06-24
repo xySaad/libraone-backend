@@ -9,10 +9,10 @@ import (
 )
 
 type Querier interface {
-	CreateOrUpdateCandidate(ctx context.Context, arg CreateOrUpdateCandidateParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
-	GetCandidateByGraphqlLogin(ctx context.Context, graphqlLogin string) (Candidate, error)
-	GetCandidateBySessionToken(ctx context.Context, arg GetCandidateBySessionTokenParams) (Candidate, error)
+	GetGiteaTokenByCandidateId(ctx context.Context, candidateID int64) (GiteaToken, error)
+	GetGiteaTokenBySessionToken(ctx context.Context, arg GetGiteaTokenBySessionTokenParams) (GiteaToken, error)
+	InsertGiteaToken(ctx context.Context, arg InsertGiteaTokenParams) error
 }
 
 var _ Querier = (*Queries)(nil)

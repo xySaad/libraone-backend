@@ -2,6 +2,7 @@ package main
 
 //go:generate go run github.com/xySaad/cfgo
 //go:generate rm -r db/generated
+//go:generate mkdir db/generated
 //go:generate go run github.com/sqlc-dev/sqlc/cmd/sqlc generate -f db/sqlc.json
 //go:generate go run -tags sqlite3 github.com/golang-migrate/migrate/v4/cmd/migrate -source file://db/migrations -database sqlite3://db/database.db up
 
@@ -36,15 +37,15 @@ func main() {
 	router.GET("/oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
 	router.GET("/oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
-	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries))
+	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries, z01authConfig))
 	talentOnly.Any("/graphql", routes.GraphQL(graphqlToken).ProxyHandler)
 
 	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
 	talentOnly.Any("/campus/*path", routes.Campus(&profileTokenSupplier).ProxyHandler)
 
-	candidateRoutes := routes.Candidate(&profileTokenSupplier)
-	talentOnly.GET("/candidate/", candidateRoutes.Candidate(queries))
-	talentOnly.GET("/candidate/:login", candidateRoutes.Candidate(queries))
+	candidateRoutes := routes.Candidate(queries, z01authConfig)
+	talentOnly.GET("/candidate/", candidateRoutes.Candidate())
+	talentOnly.GET("/candidate/:id", candidateRoutes.Candidate())
 
 	err = http.ListenAndServe(":5051", router)
 	if err != nil {
