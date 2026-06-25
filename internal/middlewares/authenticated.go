@@ -24,7 +24,7 @@ func EnsureAuthenticated(queries *db.Queries, z01authConfig z01auth.Config) trai
 		}
 
 		dbGiteaToken, err := queries.GetGiteaTokenBySessionToken(c, db.GetGiteaTokenBySessionTokenParams{
-			TokenHash: session.Hash(cookieToken.String()),
+			TokenHash: session.Hash(cookieToken.Value),
 			ExpiresAt: time.Now(),
 		})
 		if err == sql.ErrNoRows {
