@@ -22,6 +22,7 @@ var (
 	ErrOAuthCodeExchange  = e(http.StatusInternalServerError, "failed to exchange OAuth code for token")
 	ErrInsertGiteaToken   = e(http.StatusInternalServerError, "failed to persist Gitea token")
 	ErrCreateSession      = e(http.StatusInternalServerError, "failed to create session")
+	ErrCreateCandidate    = e(http.StatusInternalServerError, "failed to create candidate")
 	ErrDatabase           = e(http.StatusInternalServerError, "database error")
 	ErrGraphqlProxy       = e(http.StatusInternalServerError, "failed to proxy request to GraphQL engine")
 	ErrCampusProfileProxy = e(http.StatusInternalServerError, "failed to proxy request to campus profile service")

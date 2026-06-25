@@ -9,6 +9,11 @@ import (
 )
 
 type Candidate struct {
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+type DeprecatedCandidate struct {
 	ID             int64     `json:"id"`
 	Role           string    `json:"role"`
 	AvatarUrl      string    `json:"avatar_url"`

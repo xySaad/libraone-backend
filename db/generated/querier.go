@@ -9,6 +9,7 @@ import (
 )
 
 type Querier interface {
+	CreateCandidateIfNotExists(ctx context.Context, arg CreateCandidateIfNotExistsParams) error
 	CreateSession(ctx context.Context, arg CreateSessionParams) error
 	GetGiteaTokenByCandidateId(ctx context.Context, candidateID int64) (GiteaToken, error)
 	GetGiteaTokenBySessionToken(ctx context.Context, arg GetGiteaTokenBySessionTokenParams) (GiteaToken, error)

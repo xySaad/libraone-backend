@@ -7,6 +7,7 @@ import (
 	"libraone/internal/model"
 	"libraone/internal/session"
 	"net/http"
+	"time"
 
 	"github.com/xySaad/z01auth"
 )
@@ -34,6 +35,11 @@ func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, querie
 		if err != nil {
 			return model.ErrFetchCandidateId(err)
 		}
+		err = queries.CreateCandidateIfNotExists(c, db.CreateCandidateIfNotExistsParams{ID: int64(candidateId), CreatedAt: time.Now()})
+		if err != nil {
+			return model.ErrDatabase(err)
+		}
+
 		cookieToken, expiresAt, err := session.New(c, queries, int64(candidateId))
 		if err != nil {
 			return model.ErrCreateSession(err)
