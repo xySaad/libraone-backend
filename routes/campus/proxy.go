@@ -1,33 +1,32 @@
 package campus
 
 import (
-	"io"
 	"libraone/internal/dto"
+	"libraone/internal/lib/trail"
+	"libraone/internal/model"
 	"libraone/internal/services/profile"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 type Campus struct {
 	ProfileService profile.ProfileService
 }
 
-func (cmp *Campus) ProxyHandler(c *gin.Context, candidate *dto.Candidate) {
-	path := c.Param("path")
+func (cmp *Campus) ProxyHandler(c *trail.Context, candidate dto.Candidate) (trail.Success, *trail.Error) {
+	path := strings.TrimPrefix(c.Request.URL.Path, "/campus")
 	resp, err := cmp.ProfileService.ForwardRequest(c.Request, path)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to proxy request"})
-		return
+		return model.ErrCampusProfileProxy(err)
 	}
 	defer resp.Body.Close()
 
+	headers := make(http.Header)
 	for key, values := range resp.Header {
 		for _, value := range values {
-			c.Writer.Header().Add(key, value)
+			headers.Add(key, value)
 		}
 	}
 
-	c.Status(resp.StatusCode)
-	io.Copy(c.Writer, resp.Body)
+	return c.Success(http.StatusOK, headers, resp.Body)
 }

@@ -39,16 +39,15 @@ func (ts *TokenSupplier) Get() string {
 	if time.Now().Before(ts.exp) {
 		return ts.Supplier.Get()
 	}
-	fmt.Println("[Graphql]: refreshing token")
 	err := ts.RefreshToken()
 	if err != nil {
-		fmt.Println("error refreshing graphql token", err)
+
 		return ts.Supplier.Get()
 	}
 	newToken := ts.Supplier.Get()
 	newExp, err := parseTokenExpiry(newToken)
 	if err != nil {
-		fmt.Println("error parsing token expiry", err)
+
 		return newToken
 	}
 

@@ -15,8 +15,8 @@ type Candidate struct {
 	Campus       string `json:"campus"`
 }
 
-func CandidateFromZ01auth(candidate *z01auth.Candidate) *Candidate {
-	return &Candidate{
+func CandidateFromZ01auth(candidate *z01auth.Candidate) Candidate {
+	return Candidate{
 		ID:           int64(candidate.GiteaID),
 		Role:         string(candidate.Role),
 		AvatarUrl:    candidate.AvatarURL,

@@ -1,45 +1,44 @@
 package gitea
 
 import (
-	"context"
 	config "libraone/config/generated"
 	db "libraone/db/generated"
+	"libraone/internal/lib/trail"
+	"libraone/internal/model"
 	"libraone/internal/session"
 	"net/http"
-	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/xySaad/z01auth"
 )
 
 type Gitea struct{}
 
-func (Gitea) Entry(z01authConfig z01auth.Config) gin.HandlerFunc {
-	return func(c *gin.Context) {
+func (Gitea) Entry(z01authConfig z01auth.Config) trail.NoDepHandler {
+	return func(c *trail.Context, _ trail.Null) (trail.Success, *trail.Error) {
 		//TOOD: add state
-		c.Redirect(http.StatusMovedPermanently, z01authConfig.AuthCodeURL(""))
+		headers := http.Header{
+			"Location": {z01authConfig.AuthCodeURL("")},
+		}
+
+		return c.Success(http.StatusMovedPermanently, headers, nil)
 	}
 }
 
-func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, queries *db.Queries) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		bgCtx := context.Background()
-		giteaToken, err := z01authConfig.Exchange(bgCtx, c.Query("code"))
+func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, queries *db.Queries) trail.NoDepHandler {
+	return func(c *trail.Context, _ trail.Null) (trail.Success, *trail.Error) {
+		giteaToken, err := z01authConfig.Exchange(c, c.Query("code"))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "OAuth failure"})
-			return
+			return model.ErrOAuthCodeExchange(err)
 		}
 		candidateId, err := z01authConfig.FetchCandidateId(giteaToken)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "UserInfo failure"})
-			return
+			return model.ErrFetchCandidateId(err)
 		}
 		cookieToken, expiresAt, err := session.New(c, queries, int64(candidateId))
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Session error"})
-			return
+			return model.ErrCreateSession(err)
 		}
-		err = queries.InsertGiteaToken(bgCtx, db.InsertGiteaTokenParams{
+		err = queries.InsertGiteaToken(c, db.InsertGiteaTokenParams{
 			CandidateID:  int64(candidateId),
 			AccessToken:  giteaToken.AccessToken,
 			TokenType:    giteaToken.TokenType,
@@ -48,21 +47,24 @@ func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, querie
 			ExpiresIn:    giteaToken.ExpiresIn,
 		})
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Database error"})
-			return
+			return model.ErrInsertGiteaToken(err)
 		}
 
-		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie(
-			session.CookieName,
-			cookieToken,
-			int(time.Until(expiresAt).Seconds()),
-			"/",
-			"",
-			false, // secure: set true once serving over HTTPS
-			true,
-		)
+		cookie := http.Cookie{
+			Name:     session.CookieName,
+			Value:    cookieToken,
+			Expires:  expiresAt,
+			Path:     "/",
+			Domain:   "",
+			Secure:   false,
+			HttpOnly: true,
+		}
 
-		c.Redirect(http.StatusSeeOther, config.CallbackRedirectURL)
+		headers := http.Header{
+			"Location":   {config.CallbackRedirectURL},
+			"Set-Cookie": {cookie.String()},
+		}
+
+		return c.Success(http.StatusSeeOther, headers, nil)
 	}
 }

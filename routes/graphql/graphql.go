@@ -2,12 +2,12 @@ package graphql
 
 import (
 	"fmt"
-	"io"
 	"libraone/internal/dto"
+	"libraone/internal/lib/trail"
+	"libraone/internal/model"
 	"libraone/internal/services/graphql"
 	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 const API_BASE = "https://learn.zone01oujda.ma/api/graphql-engine/v1/graphql"
@@ -20,23 +20,22 @@ func New(token *graphql.TokenSupplier) *GraphQL {
 	return &GraphQL{token: token}
 }
 
-func (gql *GraphQL) ProxyHandler(c *gin.Context, candidate *dto.Candidate) {
-	path := c.Param("path")
+func (gql *GraphQL) ProxyHandler(c *trail.Context, candidate dto.Candidate) (trail.Success, *trail.Error) {
+	path := strings.TrimPrefix(c.Request.URL.Path, "/graphql")
 	resp, err := gql.request(c.Request, path)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{"error": "Failed to proxy request"})
-		return
+		return model.ErrGraphqlProxy(err)
 	}
 	defer resp.Body.Close()
 
+	headers := make(http.Header)
 	for key, values := range resp.Header {
 		for _, value := range values {
-			c.Writer.Header().Add(key, value)
+			headers.Add(key, value)
 		}
 	}
 
-	c.Status(resp.StatusCode)
-	io.Copy(c.Writer, resp.Body)
+	return c.Success(http.StatusOK, headers, resp.Body)
 }
 
 func (gqls *GraphQL) request(originalReq *http.Request, targetPath string) (*http.Response, error) {

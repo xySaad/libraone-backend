@@ -11,45 +11,48 @@ import (
 	"fmt"
 	config "libraone/config/generated"
 	db "libraone/db/generated"
+	"libraone/internal/lib/trail"
 	"libraone/internal/middlewares"
 	"libraone/internal/services/graphql"
 	"libraone/internal/services/profile"
 	"libraone/routes"
+	"log"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/xySaad/z01auth"
 )
 
 func main() {
+
 	config := config.GetConfig()
 	graphqlToken := graphql.MustNewTokenSupplier(config.GRAPHQL_LOGIN, config.GRAPHQL_PASSWORD)
 	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, graphqlToken)
 	sqlDB, err := sql.Open("sqlite3", "db/database.db")
 	if err != nil {
-		panic(err)
+		log.Fatal("failed to open SQLite database", err)
 	}
 	queries := db.New(sqlDB)
 
 	routes := routes.Routes{}
-	router := gin.Default()
-	router.GET("/oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
-	router.GET("/oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
+	router := trail.DefaultRouter()
+	router.AddRoute("GET /oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
+	router.AddRoute("GET /oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
-	talentOnly := middlewares.Group(router.RouterGroup, "", middlewares.EnsureTalentRole(queries, z01authConfig))
-	talentOnly.Any("/graphql", routes.GraphQL(graphqlToken).ProxyHandler)
+	talentOnly := trail.Extend(router, middlewares.EnsureTalentRole(queries, z01authConfig))
+	talentOnly.AddRoute("/graphql/", routes.GraphQL(graphqlToken).ProxyHandler)
 
 	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
-	talentOnly.Any("/campus/*path", routes.Campus(&profileTokenSupplier).ProxyHandler)
+	talentOnly.AddRoute("/campus/", routes.Campus(&profileTokenSupplier).ProxyHandler)
 
 	candidateRoutes := routes.Candidate(queries, z01authConfig)
-	talentOnly.GET("/candidate/", candidateRoutes.Candidate())
-	talentOnly.GET("/candidate/:id", candidateRoutes.Candidate())
+	talentOnly.AddRoute("GET /candidate/", candidateRoutes.Candidate)
+	talentOnly.AddRoute("GET /candidate/{id}", candidateRoutes.Candidate)
 
-	err = http.ListenAndServe(":5051", router)
+	addr := ":5051"
+	fmt.Println("HTTP server listening", addr)
+	err = http.ListenAndServe(addr, router)
 	if err != nil {
-		fmt.Println(err)
-		return
+		log.Fatal("HTTP server exited with error", err)
 	}
 }

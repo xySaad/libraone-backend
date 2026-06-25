@@ -3,24 +3,22 @@ package middlewares
 import (
 	db "libraone/db/generated"
 	"libraone/internal/dto"
-	"net/http"
+	"libraone/internal/lib/trail"
 
-	"github.com/gin-gonic/gin"
 	"github.com/xySaad/z01auth"
 )
 
-func EnsureTalentRole(queries *db.Queries, z01authConfig z01auth.Config) MiddlewareFunc[dto.Candidate] {
-	return func(c *gin.Context) *dto.Candidate {
-		candidate := EnsureAuthenticated(queries, z01authConfig)(c)
-		if c.IsAborted() {
-			return nil
+func EnsureTalentRole(queries *db.Queries, z01authConfig z01auth.Config) trail.Middleware[dto.Candidate] {
+	return func(c *trail.Context) (dto.Candidate, *trail.Error) {
+		candidate, err := EnsureAuthenticated(queries, z01authConfig)(c)
+		if err != nil {
+			return candidate, err
 		}
 
 		if candidate.Role != string(z01auth.CandidateRole_TALENT) {
-			c.AbortWithStatusJSON(http.StatusForbidden, gin.H{"error": "Forbidden"})
-			return nil
+			return ErrCandidateIsNotTalent(nil)
 		}
 
-		return candidate
+		return candidate, nil
 	}
 }
