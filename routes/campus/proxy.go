@@ -19,7 +19,6 @@ func (cmp *Campus) ProxyHandler(c *trail.Context, candidate dto.Candidate) (trai
 	if err != nil {
 		return model.ErrCampusProfileProxy(err)
 	}
-	defer resp.Body.Close()
 
 	headers := make(http.Header)
 	for key, values := range resp.Header {

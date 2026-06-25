@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 )
@@ -65,6 +66,17 @@ func (rtr *Router[T]) AddRoute(pattern string, handler Handler[T]) {
 		}
 		w.WriteHeader(handlerResult.Status)
 
+		if bodyReader, ok := handlerResult.Body.(io.ReadCloser); ok {
+			defer bodyReader.Close()
+			_, err := io.Copy(w, bodyReader)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n[%s] %s\n", reqHeader, "FATAL", err)
+			}
+
+			fmt.Fprintf(os.Stdout, "[%d] %s\n", handlerResult.Status, reqHeader)
+			return
+		}
+
 		err2 := json.NewEncoder(w).Encode(handlerResult.Body)
 		if err2 != nil {
 			w.WriteHeader(http.StatusInternalServerError)
@@ -72,7 +84,8 @@ func (rtr *Router[T]) AddRoute(pattern string, handler Handler[T]) {
 			fmt.Fprintf(os.Stderr, "%s\n[%d] %s\n", reqHeader, http.StatusInternalServerError, err2)
 			return
 		}
-		fmt.Fprintf(os.Stderr, "[%d] %s\n", handlerResult.Status, reqHeader)
+
+		fmt.Fprintf(os.Stdout, "[%d] %s\n", handlerResult.Status, reqHeader)
 	})
 }
 

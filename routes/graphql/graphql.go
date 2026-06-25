@@ -26,7 +26,6 @@ func (gql *GraphQL) ProxyHandler(c *trail.Context, candidate dto.Candidate) (tra
 	if err != nil {
 		return model.ErrGraphqlProxy(err)
 	}
-	defer resp.Body.Close()
 
 	headers := make(http.Header)
 	for key, values := range resp.Header {
