@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 COPY --from=builder /out/libraone   /app/libraone
 COPY --from=builder /out/migrate    /app/migrate
-COPY db/migrations                  /app/db/migrations
+COPY db/migrations                  /app/migrations
 COPY entrypoint.sh                  /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh /app/migrate /app/libraone \
     && mkdir -p /app/db
