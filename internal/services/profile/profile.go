@@ -66,7 +66,7 @@ func (ps *ProfileService) ForwardRequest(originalReq *http.Request, targetPath s
 	if err != nil {
 		return nil, fmt.Errorf("parsing 403 body: %w", err)
 	}
-	if jsonResp["detail"] != "Not authenticated" {
+	if jsonResp["detail"] != "Forbidden" {
 		resp.Body = io.NopCloser(bytes.NewBuffer(bodyCopy))
 		return resp, nil
 	}
