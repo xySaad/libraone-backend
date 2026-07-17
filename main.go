@@ -40,6 +40,7 @@ func main() {
 	router.AddRoute("GET /oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
 
 	talentOnly := trail.Extend(router, middlewares.EnsureTalentRole(queries, z01authConfig))
+	talentOnly.AddRoute("GET /object/", routes.Object.ProxyHandler)
 	talentOnly.AddRoute("/graphql/", routes.GraphQL(graphqlToken).ProxyHandler)
 
 	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)

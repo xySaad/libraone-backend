@@ -8,12 +8,14 @@ import (
 	"libraone/routes/candidate"
 	"libraone/routes/graphql"
 	"libraone/routes/oauth"
+	"libraone/routes/object"
 
 	"github.com/xySaad/z01auth"
 )
 
 type Routes struct {
 	oauth.OAuth
+	object.Object
 }
 
 func (Routes) Campus(profileService *profile.ProfileService) *campus.Campus {
