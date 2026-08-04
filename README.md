@@ -1,9 +1,6 @@
-### Developing
-
-#### Env
-
-GITEA_CLIENT_SECRET is a secret for a gitea application with scopes: `read:user`
-
+### Development
+#### Environment
+see [.env.example](.env.example)
 #### Create a migration
 
 ```bash
