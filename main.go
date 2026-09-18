@@ -24,10 +24,6 @@ import (
 )
 
 func main() {
-
-	config := config.GetConfig()
-	graphqlToken := graphql.MustNewTokenSupplier(config.GRAPHQL_LOGIN, config.GRAPHQL_PASSWORD)
-	z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, graphqlToken)
 	sqlDB, err := sql.Open("sqlite3", "db/database.db")
 	if err != nil {
 		log.Fatal("failed to open SQLite database", err)
@@ -36,19 +32,43 @@ func main() {
 
 	routes := routes.Routes{}
 	router := trail.DefaultRouter()
-	router.AddRoute("GET /oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
-	router.AddRoute("GET /oauth/gitea/callback", routes.OAuth.Gitea.Callback(config, z01authConfig, queries))
+	//v1
+	{
+		v1routes := trail.Extend(router, trail.NoOpMiddleware())
+		//dependencies
+		config := config.GetV1()
+		graphqlToken := graphql.MustNewTokenSupplier(config.GRAPHQL_LOGIN, config.GRAPHQL_PASSWORD)
+		z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, graphqlToken)
 
-	talentOnly := trail.Extend(router, middlewares.EnsureTalentRole(queries, z01authConfig))
-	talentOnly.AddRoute("GET /object/", routes.Object.ProxyHandler)
-	talentOnly.AddRoute("/graphql/", routes.GraphQL(graphqlToken).ProxyHandler)
+		//routes
+		v1routes.AddRoute("GET /oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
+		v1routes.AddRoute("GET /oauth/gitea/callback", routes.OAuth.Gitea.Callback(config.CallbackRedirectURL, z01authConfig, queries))
 
-	profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
-	talentOnly.AddRoute("/campus/", routes.Campus(&profileTokenSupplier).ProxyHandler)
+		talentOnly := trail.Extend(v1routes, middlewares.EnsureTalentRole(queries, z01authConfig))
+		talentOnly.AddRoute("GET /object/", routes.Object.ProxyHandler)
+		talentOnly.AddRoute("/graphql/", routes.GraphQL(graphqlToken).ProxyHandler)
 
-	candidateRoutes := routes.Candidate(queries, z01authConfig)
-	talentOnly.AddRoute("GET /candidate/", candidateRoutes.Candidate)
-	talentOnly.AddRoute("GET /candidate/{id}", candidateRoutes.Candidate)
+		profileTokenSupplier := profile.MustNewService(config.PROFILE_LOGIN, config.PROFILE_PASSWORD)
+		talentOnly.AddRoute("/campus/", routes.Campus(&profileTokenSupplier).ProxyHandler)
+
+		candidateRoutes := routes.Candidate(queries, z01authConfig)
+		talentOnly.AddRoute("GET /candidate/", candidateRoutes.Candidate)
+		talentOnly.AddRoute("GET /candidate/{id}", candidateRoutes.Candidate)
+	}
+
+	//V2
+	{
+		v2routes := trail.Extend(router, trail.NoOpMiddleware())
+		//dependencies
+		config := config.GetV2()
+		graphqlToken := graphql.MustNewTokenSupplier(config.GRAPHQL_LOGIN, config.GRAPHQL_PASSWORD)
+		z01authConfig := z01auth.New(config.GiteaClientID, config.GiteaClientSecret, config.GiteaRedirectURL, graphqlToken)
+
+		//routes
+		v2routes.AddRoute("GET /v2/oauth/gitea", routes.OAuth.Gitea.Entry(z01authConfig))
+		v2routes.AddRoute("GET /v2/oauth/gitea/callback", routes.OAuth.Gitea.Callback(config.CallbackRedirectURL, z01authConfig, queries))
+
+	}
 
 	addr := ":5051"
 	fmt.Println("HTTP server listening", addr)
