@@ -1,7 +1,6 @@
 package gitea
 
 import (
-	config "libraone/config/generated"
 	db "libraone/db/generated"
 	"libraone/internal/lib/trail"
 	"libraone/internal/model"
@@ -25,7 +24,7 @@ func (Gitea) Entry(z01authConfig z01auth.Config) trail.NoDepHandler {
 	}
 }
 
-func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, queries *db.Queries) trail.NoDepHandler {
+func (Gitea) Callback(callbackRedirectURL string, z01authConfig z01auth.Config, queries *db.Queries) trail.NoDepHandler {
 	return func(c *trail.Context, _ trail.Null) (trail.Success, *trail.Error) {
 		giteaToken, err := z01authConfig.Exchange(c, c.Query("code"))
 		if err != nil {
@@ -67,7 +66,7 @@ func (Gitea) Callback(config config.Config, z01authConfig z01auth.Config, querie
 		}
 
 		headers := http.Header{
-			"Location":   {config.CallbackRedirectURL},
+			"Location":   {callbackRedirectURL},
 			"Set-Cookie": {cookie.String()},
 		}
 
