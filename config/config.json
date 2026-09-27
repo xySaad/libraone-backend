@@ -13,7 +13,7 @@
   "v2": {
     "giteaClientSecret": "@ENV.GITEA_CLIENT_SECRET",
     "giteaClientID": "${v1.giteaClientID}",
-    "giteaRedirectURL": "${v1.giteaRedirectURL}",
+    "giteaRedirectURL": "https://libraone.undo.it/api/v2/oauth/gitea/callback",
     "callbackRedirectURL": "https://libraone.undo.it/accounts/gitea?close=true",
     "PROFILE_LOGIN": "@ENV.PROFILE_LOGIN",
     "PROFILE_PASSWORD": "@ENV.PROFILE_PASSWORD",

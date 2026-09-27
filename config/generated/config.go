@@ -13,62 +13,62 @@ func mustLoadEnv(path string) map[string]string {
 	return env
 }
 var env_ENV = mustLoadEnv(".env")
-type V1 struct {
+type V2 struct {
+	PROFILE_LOGIN string
+	PROFILE_PASSWORD string
+	GRAPHQL_LOGIN string
+	GRAPHQL_PASSWORD string
 	GiteaClientSecret string
 	GiteaClientID string
+	GiteaRedirectURL string
+	CallbackRedirectURL string
+}
+
+var v2 = V2{
+	PROFILE_LOGIN: env_ENV["PROFILE_LOGIN"],
+	PROFILE_PASSWORD: env_ENV["PROFILE_PASSWORD"],
+	GRAPHQL_LOGIN: env_ENV["GRAPHQL_LOGIN"],
+	GRAPHQL_PASSWORD: env_ENV["GRAPHQL_PASSWORD"],
+	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
+	GiteaClientID: "e5f4ddaa-2369-4ae3-b51a-bfac995b3626",
+	GiteaRedirectURL: "https://libraone.undo.it/api/v2/oauth/gitea/callback",
+	CallbackRedirectURL: "https://libraone.undo.it/accounts/gitea?close=true",
+}
+
+func GetV2() V2 { return v2 }
+
+type V1 struct {
 	GiteaRedirectURL string
 	CallbackRedirectURL string
 	PROFILE_LOGIN string
 	PROFILE_PASSWORD string
 	GRAPHQL_LOGIN string
 	GRAPHQL_PASSWORD string
+	GiteaClientSecret string
+	GiteaClientID string
 }
 
 var v1 = V1{
-	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
-	GiteaClientID: "e5f4ddaa-2369-4ae3-b51a-bfac995b3626",
 	GiteaRedirectURL: "https://libraone.undo.it/api/oauth/gitea/callback",
 	CallbackRedirectURL: "https://libraone.undo.it/login/gitea?close=true",
 	PROFILE_LOGIN: env_ENV["PROFILE_LOGIN"],
 	PROFILE_PASSWORD: env_ENV["PROFILE_PASSWORD"],
 	GRAPHQL_LOGIN: env_ENV["GRAPHQL_LOGIN"],
 	GRAPHQL_PASSWORD: env_ENV["GRAPHQL_PASSWORD"],
+	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
+	GiteaClientID: "e5f4ddaa-2369-4ae3-b51a-bfac995b3626",
 }
 
 func GetV1() V1 { return v1 }
 
-type V2 struct {
-	PROFILE_PASSWORD string
-	GRAPHQL_LOGIN string
-	GRAPHQL_PASSWORD string
-	GiteaClientSecret string
-	GiteaClientID string
-	GiteaRedirectURL string
-	CallbackRedirectURL string
-	PROFILE_LOGIN string
-}
-
-var v2 = V2{
-	PROFILE_PASSWORD: env_ENV["PROFILE_PASSWORD"],
-	GRAPHQL_LOGIN: env_ENV["GRAPHQL_LOGIN"],
-	GRAPHQL_PASSWORD: env_ENV["GRAPHQL_PASSWORD"],
-	GiteaClientSecret: env_ENV["GITEA_CLIENT_SECRET"],
-	GiteaClientID: "e5f4ddaa-2369-4ae3-b51a-bfac995b3626",
-	GiteaRedirectURL: "https://libraone.undo.it/api/oauth/gitea/callback",
-	CallbackRedirectURL: "https://libraone.undo.it/accounts/gitea?close=true",
-	PROFILE_LOGIN: env_ENV["PROFILE_LOGIN"],
-}
-
-func GetV2() V2 { return v2 }
-
 type Config struct {
-	V1 V1
 	V2 V2
+	V1 V1
 }
 
 var config = Config{
-	V1: v1,
 	V2: v2,
+	V1: v1,
 }
 
 func GetConfig() Config { return config }
